@@ -4,6 +4,7 @@ import {
   reviewRepository,
   type ReviewWithProduct,
 } from "../repositories/reviewRepository";
+import { summaryService } from "./summaryService";
 
 const formatReview = (review: ReviewWithProduct) => ({
   id: review.id,
@@ -39,6 +40,12 @@ export const reviewService = {
 
     const reviews = await reviewRepository.findMany(productId);
 
-    return reviews.map(formatReview);
+    const summaryResult = await summaryService.summarizeProductReviews(productId);
+
+    return {
+      reviews: reviews.map(formatReview),
+      summary: summaryResult.summary,
+      summarySource: summaryResult.source,
+    };
   },
 };

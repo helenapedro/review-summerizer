@@ -38,6 +38,59 @@ const ensureReviewsExist = (reviews: ReviewWithProduct[]) => {
   }
 };
 
+type SummaryResult = {
+  summary: ReturnType<typeof formatSummary>;
+  source: "cache" | "generated" | "in-flight";
+};
+
+type ProductId = number;
+
+const pendingSummaryGenerations = new Map<ProductId, Promise<SummaryResult>>();
+
+const generateAndStoreSummary = async (
+  productId: number,
+): Promise<SummaryResult> => {
+  const reviews = await reviewRepository.findRecentByProductId(
+    productId,
+    env.SUMMARY_REVIEW_LIMIT,
+  );
+  ensureReviewsExist(reviews);
+
+  const content = await languageModelService.summarizeReviews(
+    reviews,
+    env.SUMMARY_REVIEW_LIMIT,
+  );
+  const summary = await summaryRepository.upsert(
+    productId,
+    content,
+    buildExpiresAt(),
+  );
+
+  return {
+    summary: formatSummary(summary),
+    source: "generated",
+  };
+};
+
+const getOrCreatePendingGeneration = (productId: number) => {
+  const pendingGeneration = pendingSummaryGenerations.get(productId);
+
+  if (pendingGeneration) {
+    return pendingGeneration.then((result) => ({
+      ...result,
+      source: "in-flight" as const,
+    }));
+  }
+
+  const generation = generateAndStoreSummary(productId).finally(() => {
+    pendingSummaryGenerations.delete(productId);
+  });
+
+  pendingSummaryGenerations.set(productId, generation);
+
+  return generation;
+};
+
 export const summaryService = {
   async getProductSummary(productId: number) {
     await ensureProductExists(productId);
@@ -63,25 +116,6 @@ export const summaryService = {
       };
     }
 
-    const reviews = await reviewRepository.findRecentByProductId(
-      productId,
-      env.SUMMARY_REVIEW_LIMIT,
-    );
-    ensureReviewsExist(reviews);
-
-    const content = await languageModelService.summarizeReviews(
-      reviews,
-      env.SUMMARY_REVIEW_LIMIT,
-    );
-    const summary = await summaryRepository.upsert(
-      productId,
-      content,
-      buildExpiresAt(),
-    );
-
-    return {
-      summary: formatSummary(summary),
-      source: "generated" as const,
-    };
+    return getOrCreatePendingGeneration(productId);
   },
 };

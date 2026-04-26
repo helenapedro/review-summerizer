@@ -86,7 +86,7 @@ GET /reviews?productId=1
 GET /products/1/reviews
 ```
 
-Review responses include the related product record.
+Review responses include the related product record. `GET /products/1/reviews` also includes the product review summary so product pages can load reviews and summary with one request.
 
 Fetch a stored product review summary:
 

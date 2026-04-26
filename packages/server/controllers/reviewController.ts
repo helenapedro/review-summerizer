@@ -35,9 +35,9 @@ export const reviewController = {
         return;
       }
 
-      const reviews = await reviewService.getProductReviews(productId);
+      const result = await reviewService.getProductReviews(productId);
 
-      res.json({ reviews });
+      res.json(result);
     } catch (error) {
       next(error);
     }
