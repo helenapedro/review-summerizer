@@ -1,18 +1,9 @@
 import type { RequestHandler } from "express";
-import { z } from "zod";
 import { reviewService } from "../services/reviewService";
-
-const productIdSchema = z.coerce.number().int().positive();
-
-const parseProductId = (value: unknown) => {
-  const parsedProductId = productIdSchema.safeParse(value);
-
-  if (!parsedProductId.success) {
-    return undefined;
-  }
-
-  return parsedProductId.data;
-};
+import {
+  parseProductId,
+  productIdErrorMessage,
+} from "../validators/requestValidation";
 
 export const reviewController = {
   getReviews: (async (req, res, next) => {
@@ -23,7 +14,7 @@ export const reviewController = {
           : parseProductId(req.query.productId);
 
       if (req.query.productId !== undefined && productId === undefined) {
-        res.status(400).json({ error: "productId must be a positive integer" });
+        res.status(400).json({ error: productIdErrorMessage });
         return;
       }
 
@@ -40,7 +31,7 @@ export const reviewController = {
       const productId = parseProductId(req.params.productId);
 
       if (productId === undefined) {
-        res.status(400).json({ error: "productId must be a positive integer" });
+        res.status(400).json({ error: productIdErrorMessage });
         return;
       }
 

@@ -11,7 +11,7 @@ const formatReview = (review: ReviewWithProduct) => ({
   rating: review.rating,
   content: review.content,
   createdAt: review.createdAt,
-  productId: review.productIt,
+  productId: review.productId,
   product: review.product,
 });
 

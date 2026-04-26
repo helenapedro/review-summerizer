@@ -3,7 +3,7 @@ import { prisma } from "../db/prisma";
 export const reviewRepository = {
   findMany(productId?: number) {
     return prisma.review.findMany({
-      where: productId === undefined ? undefined : { productIt: productId },
+      where: productId === undefined ? undefined : { productId },
       include: {
         product: true,
       },
@@ -16,7 +16,7 @@ export const reviewRepository = {
   findRecentByProductId(productId: number, limit: number) {
     return prisma.review.findMany({
       where: {
-        productIt: productId,
+        productId,
       },
       include: {
         product: true,

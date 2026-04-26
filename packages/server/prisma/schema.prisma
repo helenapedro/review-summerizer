@@ -24,8 +24,8 @@ model Review {
   rating    Int      @db.TinyInt
   content   String   @db.Text
   createdAt DateTime @default(now())
-  productIt Int
-  product   Product  @relation(fields: [productIt], references: [id])
+  productId Int      @map("productIt")
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@map("reviews")
 }

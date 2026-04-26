@@ -1,5 +1,9 @@
 import { env } from "../config/env";
 import { HttpError } from "../errors/httpError";
+import {
+  buildReviewSummaryInput,
+  buildReviewSummaryInstructions,
+} from "../prompts/reviewSummaryPrompt";
 import type { ReviewWithProduct } from "../repositories/reviewRepository";
 
 type ResponsesApiResponse = {
@@ -29,22 +33,6 @@ const extractText = (response: ResponsesApiResponse) => {
   );
 };
 
-const buildSummaryInput = (reviews: ReviewWithProduct[]) => {
-  const product = reviews[0]?.product;
-
-  return [
-    `Product: ${product?.name ?? "Unknown product"}`,
-    product?.description ? `Description: ${product.description}` : undefined,
-    "Reviews:",
-    ...reviews.map(
-      (review, index) =>
-        `${index + 1}. Rating: ${review.rating}/5. Author: ${review.author}. Review: ${review.content}`,
-    ),
-  ]
-    .filter(Boolean)
-    .join("\n");
-};
-
 export const languageModelService = {
   async summarizeReviews(reviews: ReviewWithProduct[], reviewLimit: number) {
     const apiKey = getApiKey();
@@ -61,13 +49,21 @@ export const languageModelService = {
       },
       body: JSON.stringify({
         model: env.SUMMARIZER_MODEL,
-        instructions: `Summarize the most recent product reviews for an ecommerce API. The input contains at most ${reviewLimit} recent reviews, not the full review history. Be concise, factual, and balanced. Mention common praise, common complaints, and the recent overall sentiment. Do not invent details.`,
-        input: buildSummaryInput(reviews),
-        max_output_tokens: 350,
+        instructions: buildReviewSummaryInstructions(reviewLimit),
+        input: buildReviewSummaryInput(reviews),
+        max_output_tokens: 500,
       }),
     });
 
     if (!response.ok) {
+      const responseText = await response.text();
+
+      console.error("OpenAI summary generation failed.", {
+        status: response.status,
+        statusText: response.statusText,
+        response: responseText.slice(0, 500),
+      });
+
       throw new HttpError(502, "Failed to generate review summary");
     }
 
