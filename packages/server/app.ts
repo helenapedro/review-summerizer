@@ -1,5 +1,6 @@
 import express from "express";
 import { env } from "./config/env";
+import { errorHandler } from "./middleware/errorHandler";
 import { routes } from "./routes";
 
 export const app = express();
@@ -11,14 +12,4 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-app.use(
-  (
-    error: unknown,
-    _req: express.Request,
-    res: express.Response,
-    _next: express.NextFunction,
-  ) => {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  },
-);
+app.use(errorHandler);
