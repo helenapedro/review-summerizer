@@ -14,6 +14,10 @@ Create `packages/server/.env` with the required server and database settings:
 
 ```env
 PORT=3000
+OPENAI_API_KEY="sk-..."
+SUMMARIZER_MODEL="gpt-5.4-mini"
+SUMMARY_TTL_HOURS=24
+SUMMARY_REVIEW_LIMIT=20
 DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/DATABASE"
 SHADOW_DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/SHADOW_DATABASE"
 SUMMERIZER_DB_NAME="DATABASE"
@@ -81,6 +85,22 @@ GET /products/1/reviews
 ```
 
 Review responses include the related product record.
+
+Fetch a stored product review summary:
+
+```txt
+GET /products/1/summary
+```
+
+Generate or refresh a product review summary:
+
+```txt
+POST /products/1/summary
+POST /products/1/summary?force=true
+```
+
+Generated summaries are stored in the `summaries` table. The API reuses an unexpired stored summary unless `force=true` is provided.
+When generating a summary, the server sends only the most recent `SUMMARY_REVIEW_LIMIT` reviews to the language model.
 
 ## Validate
 

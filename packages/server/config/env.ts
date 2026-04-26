@@ -13,7 +13,26 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
-  //    OPEN_API_KEY: z.string().trim().min(1, 'OPEN_API_KEY is required'),
+  OPENAI_API_KEY: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().optional(),
+  ),
+  OPEN_API_KEY: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().optional(),
+  ),
+  SUMMARIZER_MODEL: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().default("gpt-5.4-mini"),
+  ),
+  SUMMARY_TTL_HOURS: z.preprocess(
+    emptyStringToUndefined,
+    z.coerce.number().int().positive().default(24),
+  ),
+  SUMMARY_REVIEW_LIMIT: z.preprocess(
+    emptyStringToUndefined,
+    z.coerce.number().int().min(1).max(50).default(20),
+  ),
   //    HELENA_EXPLORA_SITE_URL: z.preprocess(
   //       emptyStringToUndefined,
   //       z.string().trim().url('HELENA_EXPLORA_SITE_URL must be a valid URL')

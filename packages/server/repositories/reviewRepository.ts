@@ -12,6 +12,21 @@ export const reviewRepository = {
       },
     });
   },
+
+  findRecentByProductId(productId: number, limit: number) {
+    return prisma.review.findMany({
+      where: {
+        productIt: productId,
+      },
+      include: {
+        product: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
+  },
 };
 
 export type ReviewWithProduct = Awaited<
