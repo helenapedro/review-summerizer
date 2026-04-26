@@ -25,9 +25,11 @@ SUMMERIZER_DB_HOST="HOST"
 SUMMERIZER_DB_PORT=3306
 SUMMERIZER_DB_USER="USER"
 SUMMERIZER_DB_PASSWORD="PASSWORD"
+SUMMERIZER_DB_CONNECTION_LIMIT=10
 ```
 
 `SHADOW_DATABASE_URL` is used by `prisma migrate dev`. It must point to a separate empty database because Prisma may reset it while developing migrations.
+`OPENAI_API_KEY` is used for generated summaries. `OPEN_API_KEY` is still accepted as a legacy fallback.
 
 ## Database
 
