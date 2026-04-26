@@ -80,6 +80,10 @@ const envSchema = z.object({
     emptyStringToUndefined,
     z.coerce.number().int().positive().default(10),
   ),
+  DATABASE_URL: z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().url("DATABASE_URL must be a valid database URL"),
+  ),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
