@@ -79,6 +79,12 @@ Fetch all reviews:
 GET /reviews
 ```
 
+Fetch products:
+
+```txt
+GET /products
+```
+
 Fetch reviews for a product:
 
 ```txt

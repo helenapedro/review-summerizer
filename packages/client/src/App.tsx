@@ -1,23 +1,72 @@
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { ApiError, fetchProductReviews } from "./api/reviews";
+import {
+  ApiError,
+  fetchProductReviews,
+  fetchProducts,
+  refreshProductSummary,
+} from "./api/reviews";
 import { ProductHeader } from "./components/ProductHeader";
 import { ProductSelector } from "./components/ProductSelector";
 import { ReviewList } from "./components/ReviewList";
+import type { ReviewSort } from "./components/ReviewControls";
 import { SummaryPanel } from "./components/SummaryPanel";
-import type { ProductReviewsResponse } from "./types";
+import type { Product, ProductReviewsResponse, Review } from "./types";
 
 export const App = () => {
   const [productId, setProductId] = useState(1);
-  const [inputValue, setInputValue] = useState("1");
+  const [products, setProducts] = useState<Product[]>([]);
   const [data, setData] = useState<ProductReviewsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshingSummary, setIsRefreshingSummary] = useState(false);
+  const [reviewQuery, setReviewQuery] = useState("");
+  const [minRating, setMinRating] = useState(0);
+  const [reviewSort, setReviewSort] = useState<ReviewSort>("newest");
 
   const product = useMemo(
     () => data?.summary.product ?? data?.reviews[0]?.product,
     [data],
   );
+
+  const visibleReviews = useMemo(() => {
+    const normalizedQuery = reviewQuery.trim().toLowerCase();
+    const reviews = data?.reviews ?? [];
+
+    return reviews
+      .filter((review) => {
+        const matchesRating = review.rating >= minRating;
+        const matchesQuery =
+          normalizedQuery.length === 0 ||
+          review.author.toLowerCase().includes(normalizedQuery) ||
+          review.content.toLowerCase().includes(normalizedQuery);
+
+        return matchesRating && matchesQuery;
+      })
+      .sort(sortReviews(reviewSort));
+  }, [data, minRating, reviewQuery, reviewSort]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadProducts = async () => {
+      try {
+        const result = await fetchProducts(controller.signal);
+
+        if (!controller.signal.aborted) {
+          setProducts(result.products);
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setProducts([]);
+        }
+      }
+    };
+
+    void loadProducts();
+
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -54,15 +103,37 @@ export const App = () => {
     return () => controller.abort();
   }, [productId]);
 
-  const handleSubmit = () => {
-    const nextProductId = Number(inputValue);
-
-    if (!Number.isInteger(nextProductId) || nextProductId < 1) {
-      setError("Enter a valid positive product ID.");
-      return;
-    }
-
+  const handleProductSelect = (nextProductId: number) => {
     setProductId(nextProductId);
+  };
+
+  const handleRefreshSummary = async () => {
+    setIsRefreshingSummary(true);
+    setError(null);
+
+    try {
+      const result = await refreshProductSummary(productId);
+
+      setData((currentData) => {
+        if (!currentData) {
+          return currentData;
+        }
+
+        return {
+          ...currentData,
+          summary: result.summary,
+          summarySource: result.source,
+        };
+      });
+    } catch (caughtError) {
+      const message =
+        caughtError instanceof ApiError
+          ? caughtError.message
+          : "Unable to refresh product summary";
+      setError(message);
+    } finally {
+      setIsRefreshingSummary(false);
+    }
   };
 
   return (
@@ -77,10 +148,10 @@ export const App = () => {
         </div>
 
         <ProductSelector
-          inputValue={inputValue}
           isLoading={isLoading}
-          onInputChange={setInputValue}
-          onSubmit={handleSubmit}
+          products={products}
+          selectedProductId={productId}
+          onProductSelect={handleProductSelect}
         />
       </aside>
 
@@ -106,8 +177,19 @@ export const App = () => {
               <SummaryPanel
                 summary={data.summary}
                 source={data.summarySource}
+                isRefreshing={isRefreshingSummary}
+                onRefresh={handleRefreshSummary}
               />
-              <ReviewList reviews={data.reviews} />
+              <ReviewList
+                reviews={visibleReviews}
+                totalReviews={data.reviews.length}
+                query={reviewQuery}
+                minRating={minRating}
+                sort={reviewSort}
+                onQueryChange={setReviewQuery}
+                onMinRatingChange={setMinRating}
+                onSortChange={setReviewSort}
+              />
             </div>
           </>
         ) : null}
@@ -115,3 +197,19 @@ export const App = () => {
     </main>
   );
 };
+
+const sortReviews =
+  (sort: ReviewSort) =>
+  (first: Review, second: Review) => {
+    if (sort === "highest") {
+      return second.rating - first.rating;
+    }
+
+    if (sort === "lowest") {
+      return first.rating - second.rating;
+    }
+
+    return (
+      new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+    );
+  };

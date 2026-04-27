@@ -1,41 +1,31 @@
-import { Search } from "lucide-react";
-import type { FormEvent } from "react";
+import type { Product } from "../types";
 
 type ProductSelectorProps = {
-  inputValue: string;
   isLoading: boolean;
-  onInputChange: (value: string) => void;
-  onSubmit: () => void;
+  products: Product[];
+  selectedProductId: number;
+  onProductSelect: (productId: number) => void;
 };
 
 export const ProductSelector = ({
-  inputValue,
   isLoading,
-  onInputChange,
-  onSubmit,
-}: ProductSelectorProps) => {
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSubmit();
-  };
-
-  return (
-    <form className="product-selector" onSubmit={handleSubmit}>
-      <label htmlFor="product-id">Product ID</label>
-      <div className="product-selector-row">
-        <input
-          id="product-id"
-          type="number"
-          min="1"
-          step="1"
-          value={inputValue}
-          onChange={(event) => onInputChange(event.target.value)}
-        />
-        <button type="submit" disabled={isLoading}>
-          <Search aria-hidden="true" />
-          <span>{isLoading ? "Loading" : "Load"}</span>
-        </button>
-      </div>
-    </form>
-  );
-};
+  products,
+  selectedProductId,
+  onProductSelect,
+}: ProductSelectorProps) => (
+  <div className="product-selector">
+    <label htmlFor="product-picker">Product</label>
+    <select
+      id="product-picker"
+      value={selectedProductId}
+      onChange={(event) => onProductSelect(Number(event.target.value))}
+      disabled={isLoading || products.length === 0}
+    >
+      {products.map((product) => (
+        <option key={product.id} value={product.id}>
+          {product.name}
+        </option>
+      ))}
+    </select>
+  </div>
+);

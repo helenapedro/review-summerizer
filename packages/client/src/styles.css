@@ -20,7 +20,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -80,13 +81,8 @@ input {
   font-weight: 700;
 }
 
-.product-selector-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-}
-
-.product-selector input {
+.product-selector input,
+.product-selector select {
   min-width: 0;
   height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -96,23 +92,12 @@ input {
   color: #ffffff;
 }
 
-.product-selector button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 44px;
-  border: 0;
-  border-radius: 6px;
-  padding: 0 14px;
-  background: #d7f068;
-  color: #1f2a27;
-  font-weight: 800;
-  cursor: pointer;
+.product-selector select {
+  width: 100%;
 }
 
-.product-selector button:disabled {
-  cursor: wait;
-  opacity: 0.7;
+.product-selector option {
+  color: #17201d;
 }
 
 .product-selector svg,
@@ -264,9 +249,49 @@ h3 {
   white-space: nowrap;
 }
 
-.summary-content {
+.refresh-summary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #d8dfd5;
+  border-radius: 6px;
+  background: #f7faf0;
+  color: #31523d;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.refresh-summary-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.refresh-summary-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.summary-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.summary-section {
+  display: grid;
+  gap: 4px;
+}
+
+.summary-section h3 {
+  color: #24332d;
+  font-size: 0.9rem;
+}
+
+.summary-section p {
   color: #33413b;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
 }
 
 .summary-meta {
@@ -287,9 +312,55 @@ h3 {
   gap: 18px;
 }
 
+.review-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, auto));
+  gap: 10px;
+  align-items: end;
+}
+
+.control-field {
+  display: grid;
+  gap: 6px;
+}
+
+.control-field span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #607169;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.control-field svg {
+  width: 14px;
+  height: 14px;
+}
+
+.control-field input,
+.control-field select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #d8dfd5;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #17201d;
+}
+
 .review-list {
   display: grid;
   gap: 12px;
+}
+
+.empty-reviews {
+  border: 1px dashed #cdd5ce;
+  border-radius: 8px;
+  padding: 24px;
+  color: #607169;
+  text-align: center;
 }
 
 .review-card {
@@ -415,11 +486,7 @@ h3 {
     flex-direction: column;
   }
 
-  .product-selector-row {
+  .review-controls {
     grid-template-columns: 1fr;
-  }
-
-  .product-selector button {
-    justify-content: center;
   }
 }
