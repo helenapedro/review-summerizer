@@ -15,17 +15,9 @@ Install dependencies:
 bun install
 ```
 
-Start the API:
+Start the API and client together from the root folder:
 
 ```bash
-cd packages/server
-bun run index.ts
-```
-
-Start the client:
-
-```bash
-cd packages/client
 bun run dev
 ```
 
@@ -35,16 +27,21 @@ Open:
 http://localhost:5173
 ```
 
-To install dependencies:
+The API runs on:
 
-```bash
-bun install
+```txt
+http://localhost:3000
 ```
 
-To run:
+You can still run each package separately:
 
 ```bash
-bun run index.ts
+bun run dev:server
+bun run dev:client
 ```
 
-This project was created using `bun init` in bun v1.3.10. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Build the client:
+
+```bash
+bun run build
+```
