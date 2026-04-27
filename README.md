@@ -1,4 +1,39 @@
-# review-summerizer
+# Review Summerizer
+
+Monorepo for a product review summarization app.
+
+## Packages
+
+- `packages/server` - Bun, Express, Prisma, MySQL API
+- `packages/client` - React and Vite frontend
+
+## Run Locally
+
+Install dependencies:
+
+```bash
+bun install
+```
+
+Start the API:
+
+```bash
+cd packages/server
+bun run index.ts
+```
+
+Start the client:
+
+```bash
+cd packages/client
+bun run dev
+```
+
+Open:
+
+```txt
+http://localhost:5173
+```
 
 To install dependencies:
 
